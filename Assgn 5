@@ -1,0 +1,17 @@
+import pandas as pd
+df = pd.read_csv('census.data.csv',sep=',')
+
+df.columns=['to_be_deleted','education', 'age', 'capital-gain', 'race', 'capital-loss', 'hours-per-week', 'sex', 'classification']
+df = df.drop(labels=['to_be_deleted'],axis=1)
+df['capital-gain'] = pd.to_numeric(df['capital-gain'],errors='coerce')
+df = df.fillna(0)
+
+ordered_class=['<=50K','>50K']
+df.classification = df.classification.astype("category",ordered=True,categories=ordered_class).cat.codes
+ordered_edu = ['Preschool','1st-4th','5th-6th','7th-8th','9th','10th','11th','12th','HS-grad','Some-college','Bachelors','Masters','Doctorate']
+df.education = df.education.astype("category",ordered=True,categories=ordered_edu).cat.codes
+
+
+# Nominal features are 'race' 'sex' 
+df.sex = df.sex.astype("category").cat.codes   
+df=pd.get_dummies(df,columns=["race"])
