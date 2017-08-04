@@ -1,0 +1,76 @@
+import pandas as pd
+import matplotlib
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import axes3d
+from pandas.tools.plotting import parallel_coordinates
+from pandas.tools.plotting import andrews_curves
+
+wheat_data = pd.read_csv("wheatdata.csv")
+
+
+a_p = wheat_data[['area','perimeter']]
+g_a = wheat_data[['groove','asymmetry']]
+
+
+a_p.plot.hist(title="Hist_a&p",alpha=0.75)
+g_a.plot.hist(title="Hist_g&a",alpha=0.75)
+
+wheat_data.plot.scatter(x='area',y='perimeter')
+plt.xlabel('Area')
+plt.ylabel('Perimeter')
+plt.suptitle('Relation b/w area and parameter')
+plt.show()
+
+wheat_data.plot.scatter(x='groove',y='asymmetry')
+plt.xlabel('groove')
+plt.ylabel('asymmetry')
+plt.suptitle('Relation b/w groove and asymmetry')
+plt.show()
+
+
+wheat_data.plot.scatter(x='compactness',y='width')
+plt.xlabel('compactness')
+plt.ylabel('width')
+plt.suptitle('Relation b/w compactness and width')
+plt.show()
+
+fig=plt.figure()
+plt.suptitle("area, perimeter, and asymmetry features")
+ax = fig.add_subplot(111,projection='3d')
+ax.set_xlabel("area")
+ax.set_ylabel("perimeter")
+ax.set_zlabel("asymmetry features")
+ax.scatter(wheat_data.area,wheat_data.perimeter,wheat_data.asymmetry,c='r')
+plt.draw()
+
+#width, groove, and length
+fig=plt.figure()
+plt.suptitle("width,length and groove")
+ax = fig.add_subplot(111,projection='3d')
+ax.set_xlabel("width")
+ax.set_ylabel("length")
+ax.set_zlabel("groove")
+ax.scatter(wheat_data.width,wheat_data.length,wheat_data.groove,c='g')
+plt.draw()
+
+
+wheat_data_mod = wheat_data.drop(labels=['id','area','perimeter'],axis=1)
+plt.figure()
+parallel_coordinates(wheat_data_mod,'wheat_type',alpha=0.4)
+plt.show()
+
+wheat_data_mod['area']=wheat_data[['area']]
+wheat_data_mod['perimeter']=wheat_data[['perimeter']] 
+
+plt.figure()
+andrews_curves(wheat_data_mod,'wheat_type',alpha=0.4)
+plt.draw()
+
+wheat_data.corr()
+plt.figure()
+plt.imshow(wheat_data_mod.corr(),cmap=plt.cm.Blues,interpolation='nearest')
+plt.colorbar()
+tick_marks = [i for i in range(len(wheat_data_mod.columns))]
+plt.xticks(tick_marks,wheat_data_mod.columns,rotation='vertical') 
+plt.yticks(tick_marks,wheat_data_mod.columns)
+plt.show()
