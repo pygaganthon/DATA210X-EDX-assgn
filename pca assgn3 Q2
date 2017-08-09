@@ -1,0 +1,64 @@
+import math
+import pandas as pd
+import matplotlib
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import axes3d
+from sklearn.decomposition import PCA
+
+from sklearn import preprocessing
+scalefeatures= True
+plt.style.use('ggplot')
+
+kid_df = pd.read_csv("kidney_disease.csv.txt")
+sum(kid_df.apply(lambda x:sum(x.isnull().values),axis=1)>0) # to see no. of rows where atleat one is nill
+
+
+
+kid_df_dropna = kid_df.dropna(axis=0)
+kid_df_dropna['rc'] = pd.to_numeric(kid_df_dropna['rc'],errors='coerce')
+kid_df_dropna['wc'] = pd.to_numeric(kid_df_dropna['wc'],errors='coerce')
+kid_df_dropna['pcv'] = pd.to_numeric(kid_df_dropna['pcv'],errors='coerce')
+labels = ['red' if i=='ckd' else 'green' for i in kid_df_dropna.classification]
+
+kid_df_brw = kid_df_dropna.drop(labels=['id', 'classification'],axis=1)
+
+kid_df_brw = pd.get_dummies(kid_df_brw,columns= ['rbc', 'pc', 'pcc', 'ba', 'htn', 'dm', 'cad', 'appet', 'pe', 'ane'])
+
+
+kid_df_brw.dtypes
+
+
+def scaleFeaturesDF(df):
+    scaled = preprocessing.StandardScaler().fit_transform(df) #scaling all feature values before PCA 
+    kid_df_brw  = pd.DataFrame(scaled,columns = df.columns)
+    return kid_df_brw
+
+if scalefeatures:
+    kid_df_brw = scaleFeaturesDF(kid_df_brw)
+
+
+#kid_df_brw.dtypes
+kid_df_brw = kid_df_brw.dropna() 
+#kid_df_brw = kid_df_brw.reset_index(drop=True)
+"""
+fig=plt.figure()
+plt.suptitle("#D of bgr rc wc")
+ax = fig.add_subplot(111,projection='3d')
+ax.set_xlabel("bgr")
+ax.set_ylabel("wc")
+ax.set_zlabel("rc")
+ax.scatter(kid_df_brw.bgr,kid_df_brw.wc,kid_df_brw.rc)
+plt.draw()
+"""
+pca = PCA(n_components=2)
+pca.fit(kid_df_brw)
+PCA(copy=True,n_components=2,whiten=False)
+T=pca.transform(kid_df_brw)
+
+Td= pd.DataFrame(T,columns=['x','y'])
+fig = plt.figure()
+Td.plot.scatter(x='x',y='y',c=labels)
+plt.show()
+
+
+
