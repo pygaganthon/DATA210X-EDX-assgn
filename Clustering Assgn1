@@ -1,0 +1,37 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+
+df = pd.read_csv("Crimes_-_2001_to_present.csv")
+df = df.dropna(axis=0)
+
+df['Date'] = pd.to_datetime(df['Date'],errors='coerce')
+df['Updated On'] = pd.to_datetime(df['Updated On'],errors='coerce')
+df = df[df.Date > '2011-01-01']
+
+def doKMeans(df):
+    # Let's plot your data with a '.' marker, a 0.3 alpha at the Longitude,
+    # and Latitude locations in your dataset. Longitude = x, Latitude = y
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.scatter(df.Longitude, df.Latitude, marker='.', alpha=0.3)
+
+    
+    df = df[['Longitude','Latitude']]
+
+
+    # TODO: Use K-Means to try and find seven cluster centers in this df.
+    # Be sure to name your kmeans model `model` so that the printing works.
+    kmeans = KMeans(n_clusters = 7)
+    kmeans.fit(df)
+    KMeans(copy_x=True,init='k-means++',max_iter=300,n_clusters=7,n_init=10,n_jobs=1,precompute_distances='auto',random_state=None,tol=0.0001,verbose=0)
+    labels=kmeans.predict(df)
+    
+    print labels
+    # Now we can print and plot the centroids:
+    centroids = kmeans.cluster_centers_
+    print centroids
+    ax.scatter(centroids[:,0], centroids[:,1], marker='x', c='red', alpha=0.5, linewidths=3, s=169)
+    plt.show()
+    
+doKMeans(df)
