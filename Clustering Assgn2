@@ -1,0 +1,47 @@
+import pandas as  pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+
+df = pd.read_csv("CDR.csv.txt")
+df['CallDate'] = pd.to_datetime(df['CallDate'],errors='coerce')
+df['CallTime'] = pd.to_timedelta(df['CallTime'],errors='coerce')
+
+df_In = df['In']
+df_In = df_In.drop_duplicates(keep="first")
+In_list = np.array(df_In).tolist()
+
+
+for i in range(len('1')):
+    
+    user = df[df.In == In_list[i]]
+    
+    user = pd.get_dummies(user,columns=['DOW'])
+    user = user[(user.DOW_Sat==1) | (user.DOW_Sun==1)]
+    user = user[(user.CallTime <  '06:00:00') | (user.CallTime > '22:00:00')]
+    
+    userloc = user[['TowerLon','TowerLat']]
+    userloc = userloc.reset_index(drop=True)
+    
+    fig=plt.figure()
+    ax = fig.add_subplot(111)
+    ax.scatter(userloc.TowerLon,userloc.TowerLat,c='g',marker='.',alpha=0.2)
+    plt.suptitle('Call Locations of User (%d) ' %In_list[i])
+    
+    kmeans = KMeans(n_clusters=2)
+    kmeans.fit(userloc)
+    KMeans(copy_x=True,init='k-means++',max_iter=300,n_clusters=2,n_init=10,n_jobs=1,precompute_distances='auto',random_state=None,tol=0.0001,verbose=0)
+    labels = kmeans.labels_
+    print labels
+    centroids = kmeans.cluster_centers_
+    print centroids
+    ax.scatter(centroids[:,0],centroids[:,1],c='r',marker='*',alpha=0.2,linewidths=2, s=169)
+    plt.show()
+    print ('\n')
+    
+    
+
+# Verification of individual user by matching with answer options and printing answers
+answers = np.array([[-96.943982,32.934532],[-96.730124,32.805477],[-96.801226,32.778390],[-96.822560,32.763018]])
+print kmeans.predict(answers)
+ax.scatter(answers[:,0],answers[:,1],c='g',marker='^',alpha=0.2,linewidths=2, s=169)
