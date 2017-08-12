@@ -1,0 +1,51 @@
+import pandas as  pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+
+df = pd.read_csv("CDR.csv.txt")
+df['CallDate'] = pd.to_datetime(df['CallDate'],errors='coerce')
+df['CallTime'] = pd.to_timedelta(df['CallTime'],errors='coerce')
+
+df_In = df['In']
+df_In = df_In.drop_duplicates(keep="first")
+In_array = np.array(df_In)
+
+
+for i in range(len(In_array)):
+    
+    user = df[df.In == In_array[i]]
+    
+    user = pd.get_dummies(user,columns=['DOW'])
+    user = user[(user.DOW_Sat==0) & (user.DOW_Sun==0)]
+    user = user[(user.CallTime <  '17:00:00')]
+    user = user.reset_index(drop=True) 
+    userloc = user[['TowerLon','TowerLat']]
+    userloc = userloc.reset_index(drop=True)
+    
+    fig=plt.figure()
+    ax = fig.add_subplot(111)
+    ax.scatter(userloc.TowerLon,userloc.TowerLat,c='g',marker='.',alpha=0.2)
+    plt.suptitle('Call Locations of User (%d) ' %In_array[i])
+    
+    kmeans = KMeans(n_clusters=3)
+    kmeans.fit(userloc)
+    KMeans(copy_x=True,init='k-means++',max_iter=300,n_clusters=3,n_init=10,n_jobs=1,precompute_distances='auto',random_state=None,tol=0.0001,verbose=0)
+    labels = kmeans.labels_
+    print labels
+    centroids = kmeans.cluster_centers_
+    print centroids
+    ax.scatter(centroids[:,0],centroids[:,1],c='r',marker='*',alpha=0.2,linewidths=2, s=169)
+    plt.show()
+    print ('\n')
+    min_Samples = len(labels)
+    minC = 0
+    for j in range(len(kmeans.cluster_centers_)):
+        if min_Samples > (kmeans.labels_==j).sum():
+            min_Samples = (kmeans.labels_==j).sum()
+            minC = j
+            
+    print ("Cluster with fewest examples : ",  minC)
+    user = user[kmeans.labels_==minC]
+    user = user.reset_index(drop=True) 
+    print ("Average time per cluster",user.CallTime.mean())
